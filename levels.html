@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Выбор вопроса</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000033;
+      color: white;
+      font-family: Arial, sans-serif;
+      box-sizing: border-box;
+    }
+    h2 {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 10px;
+    }
+    .cell {
+      background-color: #0033cc;
+      border: 2px solid white;
+      border-radius: 10px;
+      padding: 20px;
+      font-size: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+    .cell.answered {
+      opacity: 0.5;
+      cursor: default;
+    }
+    /* Стили для кнопки "Назад" */
+    #backButton {
+      background: linear-gradient(to right, #ffaa00, #cc7700);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      margin: 20px auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h2>Выберите ячейку (баллы за вопрос)</h2>
+  <div class="grid" id="cellsContainer">
+    <!-- 8 ячеек генерируются скриптом -->
+  </div>
+  <!-- Кнопка "Назад" для возврата на страницу index.html -->
+  <button id="backButton" onclick="goBack()">Назад</button>
+
+  <script>
+    // Если пользователь зашел без выбора категории, перенаправляем его на главную
+    const selectedCategory = sessionStorage.getItem("selectedCategory");
+    if (!selectedCategory) {
+      alert("Сначала выберите категорию!");
+      window.location.href = "index.html";
+    }
+
+    // Получаем объект прогресса из sessionStorage (если отсутствует – создаём его)
+    let progress = JSON.parse(sessionStorage.getItem("progress"));
+    if (!progress) {
+      progress = {};
+      ["Абайдың өмірбаяны", "Абайдың өлеңдері", "Әр-түрлі сұрақтар", "Қара сөздер"].forEach(cat => {
+        // Инициализируем массив answered длиной 8 (false – ещё не пройден)
+        progress[cat] = { answered: Array(8).fill(false) };
+      });
+      sessionStorage.setItem("progress", JSON.stringify(progress));
+    }
+
+    const cellsContainer = document.getElementById("cellsContainer");
+
+    // Создаем 8 ячеек: первые 4 – по 10 баллов, остальные – по 20
+    for (let i = 0; i < 8; i++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      // Если индекс от 0 до 3, балл = 10; иначе 20
+      const points = i < 4 ? 10 : 20;
+      cell.innerText = points;
+
+      // Если ячейка уже пройдена, добавляем класс answered и не вешаем обработчик клика
+      if (progress[selectedCategory] && progress[selectedCategory].answered[i]) {
+        cell.classList.add("answered");
+      } else {
+        cell.addEventListener("click", () => {
+          sessionStorage.setItem("selectedQuestionIndex", i);
+          // Переходим к странице вопроса
+          window.location.href = "question.html";
+        });
+      }
+      cellsContainer.appendChild(cell);
+    }
+
+    // Функция для возврата на главную страницу (index.html)
+    function goBack() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
